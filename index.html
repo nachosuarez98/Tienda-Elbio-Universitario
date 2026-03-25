@@ -446,12 +446,31 @@ function submitOrder() {
   const name = document.getElementById('f-name').value.trim();
   const phone = document.getElementById('f-phone').value.trim();
   const email = document.getElementById('f-email').value.trim();
-  if (!name || (!phone && !email)) { showToast('Completá nombre y al menos un contacto'); return; }
-  orders.push({ client: name, phone, email, items: cart.map(i=>`${i.name} ×${i.qty}`).join(', '), color: selectedColor, notes: document.getElementById('f-notes').value, status:'pending' });
-  renderAdminOrders();
-  document.getElementById('order-form-area').style.display = 'none';
-  document.getElementById('order-success').style.display = 'block';
-  cart = []; updateCartCount();
+
+  if (!name || (!phone && !email)) {
+    showToast('Completá nombre y al menos un contacto');
+    return;
+  }
+
+  fetch("https://script.google.com/macros/s/AKfycbxkXBgPEAYDTgvodnhPpX-ZLY4GNY60FQjZDOtYFNnXy_-4wnmPFTD-K3RX5ngu43K53w/exec", {
+    method: "POST",
+    body: JSON.stringify({
+      name: name,
+      phone: phone,
+      email: email,
+      items: cart.map(i => `${i.name} x${i.qty}`).join(", "),
+      color: selectedColor,
+      notes: document.getElementById('f-notes').value
+    })
+  })
+  .then(res => res.text())
+  .then(() => {
+    document.getElementById('order-form-area').style.display = 'none';
+    document.getElementById('order-success').style.display = 'block';
+    cart = [];
+    updateCartCount();
+  })
+  .catch(() => showToast("Error al enviar pedido"));
 }
 
 function resetOrder() {
